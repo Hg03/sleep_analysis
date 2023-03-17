@@ -8,9 +8,24 @@ import plotly.express as px
 import plotly.graph_objects as go
 import requests
 import numpy as np
+from markdownlit import mdlit
 
 st.set_page_config(layout='wide')
-st.title('Sleep Analysis Dashboard')
+
+page_bg_img = '''
+<style>
+body {
+background-image: url("https://images.unsplash.com/photo-1542281286-9e0a16bb7366");
+background-size: cover;
+}
+</style>
+'''
+
+st.markdown(page_bg_img, unsafe_allow_html=True)
+
+st.markdown(page_bg_img, unsafe_allow_html=True)
+
+mdlit('## Sleep Analysis [blue]Dashboard[/blue]')
 
 @st.cache_data
 def load():
@@ -34,17 +49,28 @@ def show_data(data):
         with st.expander('Sample Data'):
             grid_table = AgGrid(data, gridOptions = gridOptions, enable_enterprise_modules = True,update_mode = GridUpdateMode.SELECTION_CHANGED,height=400)
     with col2:
-        question_url = 'https://assets3.lottiefiles.com/packages/lf20_vyrigtxe.json'
-        question_lottie = load_lottieurl(question_url)
-        st_lottie(question_lottie)
-        st.markdown("<h3 style='text-align: center; color: black;'>⬅️ Is this Data looks appealing ??</h3>", unsafe_allow_html=True)
+        c1, c2 = st.columns(2)
+        with c1:
+            question_url = 'https://assets2.lottiefiles.com/packages/lf20_muyl0kpg.json'
+            question_lottie = load_lottieurl(question_url)
+            st_lottie(question_lottie,width=200)
+        with c2:
+            mdlit("### Is this [green]Data[/green] looks appealing ?")
+        with st.container():
+            left,mid,right = st.columns(3)
+            with mid:
+                st.markdown('<h3 style="text-align: center;color : orange;">Lets try to visualize it </h3>',unsafe_allow_html=True)
+                dropdown_url = "https://assets2.lottiefiles.com/packages/lf20_wsyyln4p.json"
+                dropdown_lottie = load_lottieurl(dropdown_url)
+                st_lottie(dropdown_lottie,width=200)
+
 
 def plots(data):
     with st.container():
         sel = st.selectbox('Filter your sleep efficiencies',['Sleep Duration','Caffeine Consumption','Alcohol Consumption','Smoking Status','Exercise Frequency'])
         col1,col2 = st.columns([7,5])
         with col1:
-            fig1 = px.histogram(data,x='sleepefficiency',color=''.join(sel.lower().split()),labels = {'sleepefficiency':'Sleep Efficiency'},title='How much duration is enough for efficient sleep ?')
+            fig1 = px.histogram(data,x='sleepefficiency',color=''.join(sel.lower().split()),labels = {'sleepefficiency':'Sleep Efficiency'},title='How much duration is enough for efficient sleep ? ⏰⏰')
             st.plotly_chart(fig1)
         with col2:
             fig2 = px.pie(data,names=''.join(sel.lower().split()),title=f'Composition Chart of {sel}',hole=.3)
@@ -52,17 +78,15 @@ def plots(data):
 
 
     with st.container():
-        deep_vs_rem = px.scatter(data,x='deepsleeppercentage',y='remsleeppercentage',color='gender',size='sleepduration',title='Analzing Deep sleep and REM sleep %')
+        deep_vs_rem = px.scatter(data.dropna(),x='deepsleeppercentage',y='remsleeppercentage',color='alcoholconsumption',size='awakenings',title='😪 Analzing Deep sleep and REM sleep %')
         st.plotly_chart(deep_vs_rem,use_container_width=True)
         col1,col2 = st.columns(2)
         with col1 :
-
-            fig = go.Figure(data=[go.Mesh3d(x=data.deepsleeppercentage.tolist(),y=data.remsleeppercentage.tolist(),z=data.sleepefficiency,opacity=0.5,color='green',)])
-            fig.update_layout(title='Deep Sleep Vs REM sleep Vs Sleep Efficiency')
-            st.plotly_chart(fig)
-        
+            status = st.selectbox(label=' (%) of men & womens',options = ['Alcohol Consumption','Caffeine Consumption','Exercise Frequency'])
+            pie = px.pie(data,names='gender',values=''.join(status.lower().split()),title=f'Males and Females composition of {status}')
+            st.plotly_chart(pie)
         with col2:
-            fig = px.density_heatmap(data,x='exercisefrequency',y='deepsleeppercentage',text_auto=True,title='Exercise Matters to all ')
+            fig = px.density_heatmap(data,x='exercisefrequency',y='deepsleeppercentage',text_auto=True,title='💪 Exercise Matters to all 💪')
             st.plotly_chart(fig)
 
 
